@@ -2,6 +2,7 @@
 <resources>
 
     <string name="app_name">Pick Up Friends</string>
-    <string name="title_activity_main">Maps</string>
+    <string name="title_activity_main">Pick Up Friends</string>
+    <string name="addresses_bundle_key">grabAddressesFromBundle</string>
 
 </resources>

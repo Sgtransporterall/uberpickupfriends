@@ -34,6 +34,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".MapActivity"
+            android:label="Maps" >
+        </activity>
+
+        <service
+            android:name=".DirectedNodeGraphService"
+            android:enabled="true"
+            android:exported="true" >
+        </service>
+        <service
+            android:name=".DirectedGraphService"
+            android:exported="false" >
+        </service>
     </application>
 
 </manifest>
