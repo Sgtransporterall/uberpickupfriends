@@ -45,18 +45,10 @@ public class MapActivity extends FragmentActivity {
     private final String BUNDLE_KEY_ADDRESSES = "grabAddressesFromBundle";
     /*********************************/
 
-    /** UBER API CONSTANTS **/
-    private static final String UBER_BASE_URL = "https://api.uber.com/v1";
-    private static final String UBER_CLIENT_ID = "rbGoc4pYCaiK9ZiTMAiu9UfVaFS7NPY-";
-    private static final String UBER_SERVER_TOKEN = "GGk_FUpXdx2ngv7qhAp1usnwOLYtayQQAkgsikkW";
-    private static final String UBER_PRICE_ESTIMATE = "/estimates/price";
-    /************************/
-
     private GoogleMap mMap;
     private String chosenItem = "";
-    ArrayList<String> location = new ArrayList<>();
     ArrayList addresses = new ArrayList<>();
-    ArrayList<LatLng> markers = new ArrayList<>();
+    ArrayList<MapPoint> markers = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,13 +73,6 @@ public class MapActivity extends FragmentActivity {
                     .getMap();
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
-                CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(new LatLng(42.3601, 71.0589))
-                        .zoom(13)
-                        .build();
-                MapFragment.newInstance(new GoogleMapOptions()
-                        .camera(cameraPosition));
-
                 GetLatitudeLongitude g = new GetLatitudeLongitude();
                 g.execute();
             }
@@ -145,15 +130,11 @@ public class MapActivity extends FragmentActivity {
                     temp = temp.getJSONObject("geometry");
                     temp = temp.getJSONObject("location");
 
-                    location.add(temp.getString("lat"));
-                    location.add(temp.getString("lng"));
-
-                    final float lat = Float.valueOf(location.get(0));
-                    final float lng = Float.valueOf(location.get(1));
+                    final float lat = Float.valueOf(temp.getString("lat"));
+                    final float lng = Float.valueOf(temp.getString("lng"));
                     final LatLng USER_INPUT = new LatLng(lat, lng);
 
-                    markers.add(USER_INPUT);
-                    location = new ArrayList<>();
+                    markers.add(new MapPoint(chosenItem, USER_INPUT, i, 0));
                     jsonResults = new StringBuilder();
 
                 } catch (JSONException e) {
@@ -178,7 +159,8 @@ public class MapActivity extends FragmentActivity {
                         } else {
                             color = finished(i, markers);
                         }
-                        setUpMap(markers.get(i), (String) addresses.get(i), color);
+                        MapPoint tmp = markers.get(i);
+                        setUpMap(tmp.coords, tmp.name, color);
                     }
                 }
             });
@@ -188,73 +170,5 @@ public class MapActivity extends FragmentActivity {
             return (i+1==a.size() ? 1 : 0);
         }
     }
-        private class GetUberEstimatedFares extends AsyncTask<Void, Void, Void> {
 
-            @Override
-            protected Void doInBackground(Void... params) {
-                HttpURLConnection conn;
-                StringBuilder jsonResults = new StringBuilder();
-                    try {
-                        //builds string to be used in API call to Geocode
-                        StringBuilder sb = new StringBuilder(UBER_BASE_URL + UBER_PRICE_ESTIMATE);
-                        sb.append("?key=" + API_KEY);
-                        sb.append("&address=" + URLEncoder.encode(chosenItem, "utf8"));
-
-
-                        URL url = new URL(sb.toString());
-                        conn = (HttpURLConnection) url.openConnection();
-                        InputStreamReader in = new InputStreamReader(conn.getInputStream());
-
-                        // Load the results into a StringBuilder
-                        int read;
-                        char[] buff = new char[1024];
-                        while ((read = in.read(buff)) != -1) {
-                            jsonResults.append(buff, 0, read);
-                        }
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    try {
-                        // Create a JSON object hierarchy from the results
-                        JSONObject jsonObj = new JSONObject(jsonResults.toString());
-                        JSONArray predsJsonArray = jsonObj.getJSONArray("results");
-                        JSONObject temp = new JSONObject(predsJsonArray.get(0).toString());
-                        temp = temp.getJSONObject("geometry");
-                        temp = temp.getJSONObject("location");
-
-                        location.add(temp.getString("lat"));
-                        location.add(temp.getString("lng"));
-
-                        final float lat = Float.valueOf(location.get(0));
-                        final float lng = Float.valueOf(location.get(1));
-                        final LatLng USER_INPUT = new LatLng(lat, lng);
-
-                        markers.add(USER_INPUT);
-                        location = new ArrayList<>();
-                        jsonResults = new StringBuilder();
-
-                    } catch (JSONException e) {
-                        Log.e(LOG_TAG, "Cannot process JSON results", e);
-                    }
-
-                onPostExecute();
-                return null;
-            }
-
-            protected void onPostExecute() {
-                Handler handler = new Handler(Looper.getMainLooper());
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        
-                    }
-                });
-            }
-    }
 }
